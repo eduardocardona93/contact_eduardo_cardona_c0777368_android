@@ -3,8 +3,10 @@ package com.example.contact_eduardo_cardona_c0777368_android;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.os.Bundle;
@@ -20,6 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.contact_eduardo_cardona_c0777368_android.model.Contact;
 import com.example.contact_eduardo_cardona_c0777368_android.util.ContactViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnContactClickListener{
 
@@ -30,10 +35,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     private RecyclerView recyclerView;
 
-    // declaration of employeeViewModel
+    // declaration of contactViewModel
     private ContactViewModel contactViewModel;
     //adapter
     private RecyclerViewAdapter recyclerViewAdapter;
+
+
+    private Contact deletedContact;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         recyclerView = findViewById(R.id.contacts_rv);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        contactViewModel.getAllEmployees().observe(this, contacts -> {
+        contactViewModel.getAllContacts().observe(this, contacts -> {
             // set adapter
             recyclerViewAdapter = new RecyclerViewAdapter(contacts, this, this);
             recyclerView.setAdapter(recyclerViewAdapter);
@@ -53,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddUpdateActivity.class);
+            Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
             // the following approach as startActivityForResult is deprecated
             launcher.launch(intent);
 
@@ -73,11 +81,39 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
+            int position = viewHolder.getAdapterPosition();
+            Contact contact = contactViewModel.getAllContacts().getValue().get(position);
+            switch (direction) {
+                case ItemTouchHelper.LEFT:
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("Are you sure?");
+                    builder.setPositiveButton("Yes", (dialog, which) -> {
+                        deletedContact = contact;
+                        contactViewModel.delete(contact);
+                        Snackbar.make(recyclerView, deletedContact.getFirstName() + deletedContact.getLastName() + " is deleted!", Snackbar.LENGTH_LONG)
+                                .setAction("Undo", v -> contactViewModel.insert(deletedContact)).show();
+                    });
+                    builder.setNegativeButton("No", (dialog, which) -> recyclerViewAdapter.notifyDataSetChanged());
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    break;
+                case ItemTouchHelper.RIGHT:
+                    Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
+                    intent.putExtra(CONTACT_ID, contact.getId());
+                    startActivity(intent);
+                    break;
+            }
         }
 
         @Override
         public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .setIconHorizontalMargin(1, 1)
+                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
+                    .addSwipeRightActionIcon(R.drawable.ic_update)
+                    .create()
+                    .decorate();
+
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
     };
@@ -86,27 +122,24 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     ActivityResultLauncher<Intent> launcher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-//                if (result.getResultCode() == Activity.RESULT_OK) {
-//                    Intent data = result.getData();
-//                    String name = data.getStringExtra(AddUpdateContact.NAME_REPLY);
-//                    String salary = data.getStringExtra(AddUpdateContact.SALARY_REPLY);
-//                    String department = data.getStringExtra(AddUpdateContact.DEPARTMENT_REPLY);
-//                    // getting the current date
-//                    Calendar cal = Calendar.getInstance();
-//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.CANADA);
-//                    String joiningDate = sdf.format(cal.getTime());
-//
-//                    Employee employee = new Co(name, department, joiningDate, Double.parseDouble(salary));
-//                    employeeViewModel.insert(employee);
-//                }
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    String firstName = data.getStringExtra(AddUpdateContactActivity.FIRST_NAME_REPLY);
+                    String lastName = data.getStringExtra(AddUpdateContactActivity.LAST_NAME_REPLY);
+                    String phone = data.getStringExtra(AddUpdateContactActivity.PHONE_REPLY);
+                    String email = data.getStringExtra(AddUpdateContactActivity.EMAIL_REPLY);
+                    String address = data.getStringExtra(AddUpdateContactActivity.ADDRESS_REPLY);
+                    Contact contact = new Contact(firstName, lastName, phone, email, address);
+                    contactViewModel.insert(contact);
+                }
             });
 
     @Override
     public void onContactClick(int position) {
         Log.d(TAG, "onContactClick: " + position);
-        Contact employee = contactViewModel.getAllEmployees().getValue().get(position);
-        Intent intent = new Intent(MainActivity.this, AddUpdateActivity.class);
-        intent.putExtra(CONTACT_ID, employee.getId());
+        Contact contact = contactViewModel.getAllContacts().getValue().get(position);
+        Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
+        intent.putExtra(CONTACT_ID, contact.getId());
         startActivity(intent);
     }
 

@@ -34,6 +34,9 @@ public class Contact {
         this.address = address;
     }
 
+    public Contact() {
+    }
+
     public int getId() {
         return id;
     }

@@ -45,9 +45,6 @@ public abstract class ECRoomDatabase extends  RoomDatabase {
                     databaseWriteExecutor.execute(() -> {
                         ContactDao contactDao = INSTANCE.contactDao();
                         contactDao.deleteAll();
-
-//                        Employee employee = new Employee("Mo", "cs", "", 1111);
-//                        employeeDao.insert(employee);
                     });
                 }
             };

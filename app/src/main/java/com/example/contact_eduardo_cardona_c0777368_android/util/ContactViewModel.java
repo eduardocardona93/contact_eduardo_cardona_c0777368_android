@@ -22,9 +22,9 @@ public class ContactViewModel extends AndroidViewModel {
         allContacts = repository.getAllContacts();
     }
 
-    public LiveData<List<Contact>> getAllEmployees() {return allContacts;}
+    public LiveData<List<Contact>> getAllContacts() {return allContacts;}
 
-    public LiveData<Contact> getEmployee(int id) {return repository.getContact(id);}
+    public LiveData<Contact> getContact(int id) {return repository.getContact(id);}
 
     public void insert(Contact contact) {repository.insert(contact);}
 

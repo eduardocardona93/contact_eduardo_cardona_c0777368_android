@@ -9,6 +9,8 @@
     <string name="add_contact">a</string>
     <string name="add_new_contact">Add Contact</string>
     <string name="search_contact">Search Contact</string>
+    <string name="update_label">Update the contact</string>
+    <string name="update">Update</string>
 
 
 </resources>

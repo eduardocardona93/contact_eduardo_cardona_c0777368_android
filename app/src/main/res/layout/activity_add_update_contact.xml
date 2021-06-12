@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#C5CAE9"
-    tools:context=".AddUpdateActivity">
+    tools:context=".AddUpdateContactActivity">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -28,18 +28,18 @@
             android:textColor="#3F51B5" />
 
         <EditText
-            android:id="@+id/et_name"
+            android:id="@+id/firstname_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:autofillHints="Employee name"
+            android:autofillHints="Contact first name"
             android:fontFamily="sans-serif-black"
             android:hint="@string/firstname_label"
             android:inputType="text"
             android:paddingHorizontal="5dp" />
 
         <EditText
-            android:id="@+id/et_salary"
+            android:id="@+id/lastname_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -50,7 +50,7 @@
             android:inputType="number" />
 
         <EditText
-            android:id="@+id/phoneET"
+            android:id="@+id/phone_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -60,7 +60,7 @@
             android:inputType="phone" />
 
         <EditText
-            android:id="@+id/editTextTextEmailAddress"
+            android:id="@+id/email_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -70,7 +70,7 @@
             android:inputType="textEmailAddress" />
 
         <EditText
-            android:id="@+id/editTextTextPostalAddress"
+            android:id="@+id/address_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -80,7 +80,7 @@
             android:inputType="textPostalAddress" />
 
         <Button
-            android:id="@+id/btn_add_employee"
+            android:id="@+id/btn_add_update_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
