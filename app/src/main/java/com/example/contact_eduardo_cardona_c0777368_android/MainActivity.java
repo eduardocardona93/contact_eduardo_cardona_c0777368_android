@@ -8,11 +8,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -70,35 +72,28 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // initializing the Telephony manager instance
+        mTelephonyManager = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
 
+        contactViewModel = new ViewModelProvider.AndroidViewModelFactory(this.getApplication())
+                .create(ContactViewModel.class);
+        recyclerView = findViewById(R.id.contacts_rv);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
+            // the following approach as startActivityForResult is deprecated
+            launcher.launch(intent);
 
-//        if(!checkPermission(Manifest.permission.SEND_SMS)) {
-//            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.SEND_SMS},
-//                    SEND_SMS_PERMISSION_REQUEST_CODE);
-//        }else{
-            // initializing the Telephony manager instance
-            mTelephonyManager = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+        });
 
-            contactViewModel = new ViewModelProvider.AndroidViewModelFactory(this.getApplication())
-                    .create(ContactViewModel.class);
-            recyclerView = findViewById(R.id.contacts_rv);
-            recyclerView.setHasFixedSize(true);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            getContactsFromDb();
+        getContactsFromDb();
 
-            FloatingActionButton fab = findViewById(R.id.fab);
-            fab.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
-                // the following approach as startActivityForResult is deprecated
-                launcher.launch(intent);
-
-            });
-
-            // attach the itemTouchHelper to my recyclerView
-            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-            itemTouchHelper.attachToRecyclerView(recyclerView);
-//            }
+        // attach the itemTouchHelper to my recyclerView
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -330,28 +325,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         });
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
         getContactsFromDb();
-    }
+       }
 
-    private boolean checkPermission(String permission) {
-        int checkPermission = ContextCompat.checkSelfPermission(this, permission);
-        return (checkPermission == PackageManager.PERMISSION_GRANTED);
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case SEND_SMS_PERMISSION_REQUEST_CODE: {
-                if (grantResults.length == 0 || (grantResults[0] != PackageManager.PERMISSION_GRANTED)) {
-                    ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.SEND_SMS},
-                            SEND_SMS_PERMISSION_REQUEST_CODE);
-                }
-                return;
-            }
-        }
-    }
+
 }
