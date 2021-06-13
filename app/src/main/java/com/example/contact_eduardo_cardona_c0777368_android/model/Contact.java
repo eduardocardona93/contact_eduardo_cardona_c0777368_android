@@ -25,6 +25,18 @@ public class Contact {
     @NonNull
     @ColumnInfo(name="ADDRESS")
     private String address;
+    @NonNull
+    @ColumnInfo(name="FULL_NAME")
+    private String fullname;
+
+    @NonNull
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(@NonNull String fullname) {
+        this.fullname = fullname;
+    }
 
     public Contact(@NonNull String firstName, @NonNull String lastName, @NonNull String phoneNumber, @NonNull String email, @NonNull String address) {
         this.firstName = firstName;
@@ -32,6 +44,7 @@ public class Contact {
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.address = address;
+        this.fullname = firstName + " " + lastName;
     }
 
     public Contact() {
@@ -52,6 +65,7 @@ public class Contact {
 
     public void setFirstName(@NonNull String firstName) {
         this.firstName = firstName;
+        this.fullname = this.firstName  + " " + this.lastName;
     }
 
     @NonNull
@@ -61,6 +75,7 @@ public class Contact {
 
     public void setLastName(@NonNull String lastName) {
         this.lastName = lastName;
+        this.fullname = this.firstName  + " " + this.lastName;
     }
 
     @NonNull

@@ -84,13 +84,26 @@ public class AddUpdateContactActivity extends AppCompatActivity {
             etFirstname.requestFocus();
             return;
         }
-
         if (lastName.isEmpty()) {
             etLastName.setError("last name field cannot be empty");
             etLastName.requestFocus();
             return;
         }
-
+        if (phone.isEmpty()) {
+            etLastName.setError("phone field cannot be empty");
+            etLastName.requestFocus();
+            return;
+        }
+        if (email.isEmpty()) {
+            etLastName.setError("email field cannot be empty");
+            etLastName.requestFocus();
+            return;
+        }
+        if (address.isEmpty()) {
+            etLastName.setError("address field cannot be empty");
+            etLastName.requestFocus();
+            return;
+        }
         if (isEditing) {
             Contact contact = new Contact();
             contact.setId(contactId);

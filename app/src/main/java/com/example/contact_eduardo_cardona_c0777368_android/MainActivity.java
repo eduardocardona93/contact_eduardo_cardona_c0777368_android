@@ -10,6 +10,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -22,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
@@ -30,14 +32,19 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.contact_eduardo_cardona_c0777368_android.model.Contact;
 import com.example.contact_eduardo_cardona_c0777368_android.util.ContactViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.w3c.dom.Text;
+
 import java.util.Arrays;
 import java.util.List;
+
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnContactClickListener, RecyclerViewAdapter.OnContactLongPressListener{
 
@@ -62,34 +69,36 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // initializing the Telephony manager instance
-
-        contactViewModel = new ViewModelProvider.AndroidViewModelFactory(this.getApplication())
-                .create(ContactViewModel.class);
-        recyclerView = findViewById(R.id.contacts_rv);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        getContactsFromDb();
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
-            // the following approach as startActivityForResult is deprecated
-            launcher.launch(intent);
-
-        });
-
-        // attach the itemTouchHelper to my recyclerView
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
 
 
-        mTelephonyManager = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
-//
+
+
 //        if(!checkPermission(Manifest.permission.SEND_SMS)) {
 //            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.SEND_SMS},
 //                    SEND_SMS_PERMISSION_REQUEST_CODE);
-//        }
+//        }else{
+            // initializing the Telephony manager instance
+            mTelephonyManager = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+            contactViewModel = new ViewModelProvider.AndroidViewModelFactory(this.getApplication())
+                    .create(ContactViewModel.class);
+            recyclerView = findViewById(R.id.contacts_rv);
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            getContactsFromDb();
+
+            FloatingActionButton fab = findViewById(R.id.fab);
+            fab.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, AddUpdateContactActivity.class);
+                // the following approach as startActivityForResult is deprecated
+                launcher.launch(intent);
+
+            });
+
+            // attach the itemTouchHelper to my recyclerView
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+            itemTouchHelper.attachToRecyclerView(recyclerView);
+//            }
     }
 
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -108,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             switch (direction) {
                 case ItemTouchHelper.LEFT:
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Are you sure?");
+                    builder.setTitle("Do you really want to delete this contact?");
                     builder.setPositiveButton("Yes", (dialog, which) -> {
                         deletedContact = contact;
                         contactViewModel.delete(contact);
@@ -128,17 +137,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         }
 
 
-//        @Override
-//        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-//            new RecyclerViewSwipeDecorator(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-//                    .setIconHorizontalMargin(1, 1)
-//                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
-//                    .addSwipeRightActionIcon(R.drawable.ic_update)
-//                    .create()
-//                    .decorate();
-//
-//            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-//        }
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .setIconHorizontalMargin(1, 1)
+                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
+                    .addSwipeRightActionIcon(R.drawable.ic_update)
+                    .create()
+                    .decorate();
+
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
     };
 
     // the following approach instead of onActivityResult as startActivityForResult is deprecated
@@ -179,6 +189,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         //
         final EditText subjectET = view.findViewById(R.id.subjectET);
         final EditText messageET = view.findViewById(R.id.messageET);
+        final TextView tvlabel1 = view.findViewById(R.id.tvlabel1);
+        final TextView tvlabel2 = view.findViewById(R.id.tvlabel2);
         final Spinner spinner_action = view.findViewById(R.id.spinner_action);
         final Button actionBtn = view.findViewById(R.id.btn_action);
 
@@ -191,14 +203,20 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 actionBtn.setText(buttonLabels[position]);
                 switch (position){
                     case 1:
+                        tvlabel1.setVisibility(view.GONE);
+                        tvlabel2.setVisibility(view.VISIBLE);
                         subjectET.setVisibility(view.GONE);
                         messageET.setVisibility(view.VISIBLE);
                         break;
                     case 2:
+                        tvlabel1.setVisibility(view.VISIBLE);
+                        tvlabel2.setVisibility(view.VISIBLE);
                         subjectET.setVisibility(view.VISIBLE);
                         messageET.setVisibility(view.VISIBLE);
                         break;
                     default:
+                        tvlabel1.setVisibility(view.GONE);
+                        tvlabel2.setVisibility(view.GONE);
                         subjectET.setVisibility(view.GONE);
                         messageET.setVisibility(view.GONE);
                         break;
@@ -208,6 +226,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 actionBtn.setText(Arrays.asList(R.array.action_button_label).get(0));
+                tvlabel1.setVisibility(view.GONE);
+                tvlabel2.setVisibility(view.GONE);
                 subjectET.setVisibility(view.GONE);
                 messageET.setVisibility(view.GONE);
             }
@@ -301,11 +321,19 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     }
     private void getContactsFromDb() {
+        TextView usersCountTV = findViewById(R.id.usersCountTV);
         contactViewModel.getAllContacts().observe(this, contacts -> {
             // set adapter
             recyclerViewAdapter = new RecyclerViewAdapter(contacts, this, this,this);
             recyclerView.setAdapter(recyclerViewAdapter);
+            usersCountTV.setText(String.format("Total Contacts: %d", contacts.size()));
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getContactsFromDb();
     }
 
     private boolean checkPermission(String permission) {

@@ -37,8 +37,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Contact contact = contactList.get(position);
-        holder.firstName.setText(contact.getFirstName());
-        holder.lastName.setText(contact.getLastName());
+        holder.fullname.setText(contact.getFullname());
         holder.phone.setText(contact.getPhoneNumber());
         holder.email.setText(contact.getEmail());
         holder.address.setText(contact.getAddress());
@@ -50,16 +49,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private TextView firstName;
-        private TextView lastName;
+        private TextView fullname;
         private TextView phone;
         private TextView email;
         private TextView address;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            firstName = itemView.findViewById(R.id.firstnameTV);
-            lastName = itemView.findViewById(R.id.lastnameTV);
+            fullname = itemView.findViewById(R.id.fullnameTV);
             phone = itemView.findViewById(R.id.mainPhoneTV);
             email = itemView.findViewById(R.id.mainEmailTV);
             address = itemView.findViewById(R.id.addressTV);

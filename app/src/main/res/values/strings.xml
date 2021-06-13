@@ -16,6 +16,7 @@
 
     <string name="subject_label">Subject</string>
     <string name="message_label">Message</string>
+    <string name="fullname_label" >Full Name</string>
 
 
 </resources>

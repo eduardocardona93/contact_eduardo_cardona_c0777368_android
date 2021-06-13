@@ -19,19 +19,19 @@ public interface ContactDao {
     @Query("DELETE FROM contact")
     void deleteAll();
 
-    @Query("DELETE FROM contact WHERE id = :id")
+    @Query("DELETE FROM contact WHERE ID = :id")
     void deleteContact(int id);
 
-    @Query("UPDATE contact SET first_name=:firstName, last_name=:lastName, phone_number=:phoneNumber, email=:email, address=:address WHERE  id = :id")
+    @Query("UPDATE contact SET FIRST_NAME=:firstName, LAST_NAME=:lastName, PHONE_NUMBER=:phoneNumber, EMAIL=:email, ADDRESS=:address WHERE  ID = :id")
     void updateContact(int id, String firstName, String lastName, String phoneNumber, String email, String address);
 
-    @Query("SELECT * FROM contact order by first_name ASC")
+    @Query("SELECT * FROM contact order by FULL_NAME ASC")
     LiveData<List<Contact>> getAllContacts();
 
-    @Query("SELECT * FROM contact WHERE id = :id order by first_name ASC")
+    @Query("SELECT * FROM contact WHERE ID = :id")
     LiveData<Contact> getContact( int id);
 
-    @Query("Select * from contact where first_name like :search or last_name like :search or phone_number like :search or email like :search or address like :search")
+    @Query("Select * from contact where FULL_NAME LIKE '%' || :search || '%' or PHONE_NUMBER like '%' || :search || '%' or EMAIL like '%' || :search || '%' or ADDRESS like '%' || :search || '%'")
     LiveData<List<Contact>> getSearchedAllContacts(String search);
 
     @Update
