@@ -31,6 +31,8 @@ public interface ContactDao {
     @Query("SELECT * FROM contact WHERE id = :id order by first_name ASC")
     LiveData<Contact> getContact( int id);
 
+    @Query("Select * from contact where first_name like :search or last_name like :search or phone_number like :search or email like :search or address like :search")
+    LiveData<List<Contact>> getSearchedAllContacts(String search);
 
     @Update
     void update(Contact contact);

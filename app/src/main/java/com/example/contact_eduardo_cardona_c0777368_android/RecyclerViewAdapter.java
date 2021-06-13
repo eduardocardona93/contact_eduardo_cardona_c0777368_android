@@ -17,11 +17,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private List<Contact> contactList;
     private Context context;
     private OnContactClickListener onContactClickListener;
+    private OnContactLongPressListener onContactLongPressListener;
 
-    public RecyclerViewAdapter(List<Contact> contactList, Context context, OnContactClickListener onContactClickListener) {
+    public RecyclerViewAdapter(List<Contact> contactList, Context context, OnContactClickListener onContactClickListener, OnContactLongPressListener onContactLongPressListener) {
         this.contactList = contactList;
         this.context = context;
         this.onContactClickListener = onContactClickListener;
+        this.onContactLongPressListener = onContactLongPressListener;
     }
 
     @NonNull
@@ -62,15 +64,28 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             email = itemView.findViewById(R.id.mainEmailTV);
             address = itemView.findViewById(R.id.addressTV);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    onContactLongPressListener.onContactLongPress(getAdapterPosition());
+                    return true;
+                }
+            });
         }
         @Override
         public void onClick(View v) {
             onContactClickListener.onContactClick(getAdapterPosition());
 
         }
+
+
     }
 
     public interface OnContactClickListener {
         void onContactClick(int position);
+    }
+
+    public interface OnContactLongPressListener{
+        void onContactLongPress(int position);
     }
 }

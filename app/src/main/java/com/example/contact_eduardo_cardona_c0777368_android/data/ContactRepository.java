@@ -22,6 +22,9 @@ public class ContactRepository {
     public LiveData<List<Contact>> getAllContacts() {
         return allContacts;
     }
+    // gets contacts matched with the search
+    public LiveData<List<Contact>> getSearchedAllContacts(String search){return contactDao.getSearchedAllContacts(search);}
+
     // gets an specific contact
     public LiveData<Contact> getContact(int id) {
         return contactDao.getContact(id);

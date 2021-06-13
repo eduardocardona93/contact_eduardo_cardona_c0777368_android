@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="actions">
+        <item>Call</item>
+        <item>Message</item>
+        <item>Email</item>
+    </string-array>
+
+    <string-array name="action_button_label">
+        <item>Call Contact</item>
+        <item>Send Message</item>
+        <item>Send Email</item>
+    </string-array>
+</resources>

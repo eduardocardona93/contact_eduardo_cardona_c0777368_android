@@ -24,6 +24,10 @@ public class ContactViewModel extends AndroidViewModel {
 
     public LiveData<List<Contact>> getAllContacts() {return allContacts;}
 
+
+    public LiveData<List<Contact>> getSearchedAllContacts(String search){return repository.getSearchedAllContacts(search);}
+
+
     public LiveData<Contact> getContact(int id) {return repository.getContact(id);}
 
     public void insert(Contact contact) {repository.insert(contact);}

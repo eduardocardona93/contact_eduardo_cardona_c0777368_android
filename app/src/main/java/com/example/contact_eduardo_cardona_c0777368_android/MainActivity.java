@@ -6,14 +6,26 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Canvas;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,14 +36,17 @@ import com.example.contact_eduardo_cardona_c0777368_android.util.ContactViewMode
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
+import java.util.Arrays;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnContactClickListener{
+public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnContactClickListener, RecyclerViewAdapter.OnContactLongPressListener{
 
     private static final String TAG = "MainActivity";
     public static final int ADD_CONTACT_REQUEST_CODE = 1;
     public static final String CONTACT_ID = "contact_id";
-
+    private static final int SEND_SMS_PERMISSION_REQUEST_CODE = 111;
+    // TelephonyManager
+    private TelephonyManager mTelephonyManager;
 
     private RecyclerView recyclerView;
 
@@ -47,17 +62,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // initializing the Telephony manager instance
 
         contactViewModel = new ViewModelProvider.AndroidViewModelFactory(this.getApplication())
                 .create(ContactViewModel.class);
         recyclerView = findViewById(R.id.contacts_rv);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        contactViewModel.getAllContacts().observe(this, contacts -> {
-            // set adapter
-            recyclerViewAdapter = new RecyclerViewAdapter(contacts, this, this);
-            recyclerView.setAdapter(recyclerViewAdapter);
-        });
+        getContactsFromDb();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
@@ -70,6 +82,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         // attach the itemTouchHelper to my recyclerView
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
+
+
+        mTelephonyManager = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+//
+//        if(!checkPermission(Manifest.permission.SEND_SMS)) {
+//            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.SEND_SMS},
+//                    SEND_SMS_PERMISSION_REQUEST_CODE);
+//        }
     }
 
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -78,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
             return false;
         }
+
+
 
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
@@ -105,17 +127,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             }
         }
 
-        @Override
-        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            new RecyclerViewSwipeDecorator(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-                    .setIconHorizontalMargin(1, 1)
-                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
-                    .addSwipeRightActionIcon(R.drawable.ic_update)
-                    .create()
-                    .decorate();
 
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-        }
+//        @Override
+//        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+//            new RecyclerViewSwipeDecorator(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+//                    .setIconHorizontalMargin(1, 1)
+//                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
+//                    .addSwipeRightActionIcon(R.drawable.ic_update)
+//                    .create()
+//                    .decorate();
+//
+//            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+//        }
     };
 
     // the following approach instead of onActivityResult as startActivityForResult is deprecated
@@ -143,6 +166,100 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         startActivity(intent);
     }
 
+    @Override
+    public void onContactLongPress(int position) {
+        Contact contact = contactViewModel.getAllContacts().getValue().get(position);
+        // alert builder
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View view = layoutInflater.inflate(R.layout.action_layout, null);
+        builder.setView(view);
+        final android.app.AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        //
+        final EditText subjectET = view.findViewById(R.id.subjectET);
+        final EditText messageET = view.findViewById(R.id.messageET);
+        final Spinner spinner_action = view.findViewById(R.id.spinner_action);
+        final Button actionBtn = view.findViewById(R.id.btn_action);
+
+        spinner_action.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String[] buttonLabels = getBaseContext().getResources().getStringArray(R.array.action_button_label);
+
+
+                actionBtn.setText(buttonLabels[position]);
+                switch (position){
+                    case 1:
+                        subjectET.setVisibility(view.GONE);
+                        messageET.setVisibility(view.VISIBLE);
+                        break;
+                    case 2:
+                        subjectET.setVisibility(view.VISIBLE);
+                        messageET.setVisibility(view.VISIBLE);
+                        break;
+                    default:
+                        subjectET.setVisibility(view.GONE);
+                        messageET.setVisibility(view.GONE);
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                actionBtn.setText(Arrays.asList(R.array.action_button_label).get(0));
+                subjectET.setVisibility(view.GONE);
+                messageET.setVisibility(view.GONE);
+            }
+        });
+
+        actionBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                int position = spinner_action.getSelectedItemPosition();
+                switch (position){
+                    case 1:
+                        if (messageET.getText().toString().isEmpty()){
+                            messageET.setError("Message field cannot be empty");
+                            messageET.requestFocus();
+                        }else{
+                            Intent smsIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + contact.getPhoneNumber()));
+                            smsIntent.putExtra("sms_body", messageET.getText().toString().isEmpty());
+                            startActivity(smsIntent);
+                            alertDialog.dismiss();
+                        }
+                        break;
+                    case 2:
+                        if (subjectET.getText().toString().isEmpty()){
+                            subjectET.setError("Subject field cannot be empty");
+                            subjectET.requestFocus();
+                        }else if(messageET.getText().toString().isEmpty()){
+                            messageET.setError("Message field cannot be empty");
+                            messageET.requestFocus();
+                        }else{
+                            Intent email = new Intent(Intent.ACTION_SEND);
+                            email.putExtra(Intent.EXTRA_EMAIL, new String[]{contact.getEmail()});
+                            email.putExtra(Intent.EXTRA_SUBJECT, subjectET.getText().toString());
+                            email.putExtra(Intent.EXTRA_TEXT, messageET.getText().toString());
+
+                            //need this to prompts email client only
+                            email.setType("message/rfc822");
+                            alertDialog.dismiss();
+                            startActivity(Intent.createChooser(email, "Choose an Email client :"));
+                        }
+                        break;
+                    default:
+                        String dial = "tel:" + contact.getPhoneNumber();
+                        alertDialog.dismiss();
+                        // an intent to dial a number
+                        startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse(dial)));
+
+                        break;
+                }
+            }
+        });
+    };
     // searchbar event
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -152,16 +269,61 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false;
+                if (query != null && !query.isEmpty()) {
+                    getContactsFileredFromDb(query);
+                }else{
+                    getContactsFromDb();
+                }
+                return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                return false;
+                if (newText != null && !newText.isEmpty()) {
+                    getContactsFileredFromDb(newText);
+                }else{
+                    getContactsFromDb();
+                }
+                return true;
             }
+
+
         });
         return super.onCreateOptionsMenu(menu);
     }
+    private void getContactsFileredFromDb(String searchText ) {
 
+        contactViewModel.getSearchedAllContacts(searchText).observe(this, contacts -> {
+            // set adapter
+            recyclerViewAdapter = new RecyclerViewAdapter(contacts, this, this,this);
+            recyclerView.setAdapter(recyclerViewAdapter);
+        });
 
+    }
+    private void getContactsFromDb() {
+        contactViewModel.getAllContacts().observe(this, contacts -> {
+            // set adapter
+            recyclerViewAdapter = new RecyclerViewAdapter(contacts, this, this,this);
+            recyclerView.setAdapter(recyclerViewAdapter);
+        });
+    }
+
+    private boolean checkPermission(String permission) {
+        int checkPermission = ContextCompat.checkSelfPermission(this, permission);
+        return (checkPermission == PackageManager.PERMISSION_GRANTED);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case SEND_SMS_PERMISSION_REQUEST_CODE: {
+                if (grantResults.length == 0 || (grantResults[0] != PackageManager.PERMISSION_GRANTED)) {
+                    ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.SEND_SMS},
+                            SEND_SMS_PERMISSION_REQUEST_CODE);
+                }
+                return;
+            }
+        }
+    }
 }

@@ -11,6 +11,11 @@
     <string name="search_contact">Search Contact</string>
     <string name="update_label">Update the contact</string>
     <string name="update">Update</string>
+    <string name="action_label">Action</string>
+
+
+    <string name="subject_label">Subject</string>
+    <string name="message_label">Message</string>
 
 
 </resources>

@@ -96,7 +96,9 @@ public class AddUpdateContactActivity extends AppCompatActivity {
             contact.setId(contactId);
             contact.setFirstName(firstName);
             contact.setLastName(lastName);
-
+            contact.setPhoneNumber(phone);
+            contact.setEmail(email);
+            contact.setAddress(address);
             contactViewModel.update(contact);
         } else {
             Intent replyIntent = new Intent();
