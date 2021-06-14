@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                             messageET.requestFocus();
                         }else{
                             Intent smsIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + contact.getPhoneNumber()));
-                            smsIntent.putExtra("sms_body", messageET.getText().toString().isEmpty());
+                            smsIntent.putExtra("sms_body", messageET.getText().toString());
                             startActivity(smsIntent);
                             alertDialog.dismiss();
                         }

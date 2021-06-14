@@ -18,7 +18,7 @@ public interface ContactDao {
 
     @Query("DELETE FROM contact")
     void deleteAll();
-
+    
     @Query("DELETE FROM contact WHERE ID = :id")
     void deleteContact(int id);
 
